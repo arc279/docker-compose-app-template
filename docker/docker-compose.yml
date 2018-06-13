@@ -1,0 +1,56 @@
+version: '2'
+
+services:
+  rails:
+    container_name: app
+    build: ./container/app
+    ports:
+      - 3000:3000
+    environment:
+      BUNDLE_PATH:
+      BUNDLE_APP_CONFIG:
+      BUNDLE_SILENCE_ROOT_WARNING:
+    volumes:
+      - ../app:/var/www/app
+    stdin_open: true
+    tty: true
+
+  postgres:
+    container_name: db
+    image: postgres:9.6.7
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: hoge
+      POSTGRES_PASSWORD: hogehoge
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+
+  elasticsearch:
+    container_name: es
+    build: ./container/elasticsearch
+    environment:
+      - cluster.name=dev-kuryu-cluster
+      - node.name=dev-kuryu-01
+      - log4j2.disable.jmx=true
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - ./data/elasticsearch:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      - 9300:9300
+
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:6.0.1
+    ports:
+        - 5601:5601
+
